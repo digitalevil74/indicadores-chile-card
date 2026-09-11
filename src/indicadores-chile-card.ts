@@ -230,6 +230,7 @@ class IndicadoresChileCard extends LitElement {
 
     .indicadores {
       display: grid;
+
       grid-template-columns:
         repeat(2, minmax(0, 1fr));
 
@@ -245,69 +246,98 @@ class IndicadoresChileCard extends LitElement {
 
       border-bottom:
         1px solid var(--divider-color);
+
+      min-width: 0;
     }
 
     .nombre {
       color: var(--secondary-text-color);
       padding-top: 2px;
+
+      min-width: 0;
     }
 
     .datos {
       text-align: right;
+
+      flex-shrink: 0;
     }
 
     .linea-valor {
       display: flex;
       align-items: center;
       justify-content: flex-end;
+
       gap: 4px;
+
+      white-space: nowrap;
     }
 
     .valor {
       font-size: 16px;
       font-weight: bold;
+
+      white-space: nowrap;
     }
 
     .valor.positivo {
-      color: var(--success-color, #4caf50);
+      color:
+        var(--success-color, #4caf50);
     }
 
     .valor.negativo {
-      color: var(--error-color, #f44336);
+      color:
+        var(--error-color, #f44336);
     }
 
     .tendencia {
       --mdc-icon-size: 17px;
+
+      flex-shrink: 0;
     }
 
     .tendencia.sube {
-      color: var(--success-color, #4caf50);
+      color:
+        var(--success-color, #4caf50);
     }
 
     .tendencia.baja {
-      color: var(--error-color, #f44336);
+      color:
+        var(--error-color, #f44336);
     }
 
     .tendencia.igual {
-      color: var(--secondary-text-color);
+      color:
+        var(--secondary-text-color);
     }
 
     .fecha {
       margin-top: 4px;
+
       font-size: 12px;
-      color: var(--secondary-text-color);
+
+      color:
+        var(--secondary-text-color);
+
+      white-space: nowrap;
     }
 
     .mensaje {
       padding: 20px;
+
       text-align: center;
-      color: var(--secondary-text-color);
+
+      color:
+        var(--secondary-text-color);
     }
 
     .error {
       padding: 20px;
+
       text-align: center;
-      color: var(--error-color);
+
+      color:
+        var(--error-color);
     }
 
   `;
