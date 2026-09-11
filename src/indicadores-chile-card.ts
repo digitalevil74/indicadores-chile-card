@@ -13,10 +13,10 @@ interface Indicador {
 }
 
 interface RespuestaIndicadores {
-  uf: Indicador;
-  dolar: Indicador;
-  ipc: Indicador;
-  imacec: Indicador;
+  uf?: Indicador;
+  dolar?: Indicador;
+  ipc?: Indicador;
+  imacec?: Indicador;
 }
 
 type CodigoIndicador =
@@ -25,10 +25,18 @@ type CodigoIndicador =
   | "ipc"
   | "imacec";
 
+interface IndicadorSeleccionado {
+  indicador: Indicador;
+  fuente: "mindicador.cl" | "findic.cl";
+}
+
 class IndicadoresChileCard extends LitElement {
 
   private configuracion?: ConfiguracionTarjeta;
-  private datos?: RespuestaIndicadores;
+
+  private datos:
+    Partial<Record<CodigoIndicador, IndicadorSeleccionado>> = {};
+
   private cargando = false;
   private error?: string;
   private iniciado = false;
@@ -60,18 +68,29 @@ class IndicadoresChileCard extends LitElement {
     .indicador {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       padding: 10px 0;
       border-bottom: 1px solid var(--divider-color);
     }
 
     .nombre {
       color: var(--secondary-text-color);
+      padding-top: 2px;
+    }
+
+    .datos {
+      text-align: right;
     }
 
     .valor {
       font-size: 16px;
       font-weight: bold;
+    }
+
+    .fecha {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--secondary-text-color);
     }
 
     .mensaje {
@@ -100,42 +119,126 @@ class IndicadoresChileCard extends LitElement {
     }
   }
 
+  private async consultarApi(
+    url: string
+  ): Promise<RespuestaIndicadores> {
+
+    const respuesta = await fetch(url);
+
+    if (!respuesta.ok) {
+      throw new Error(
+        `Error HTTP ${respuesta.status}`
+      );
+    }
+
+    return (await respuesta.json()) as RespuestaIndicadores;
+  }
+
+  private seleccionarMasReciente(
+    mindicador: Indicador | undefined,
+    findic: Indicador | undefined
+  ): IndicadorSeleccionado | undefined {
+
+    if (!mindicador && !findic) {
+      return undefined;
+    }
+
+    if (mindicador && !findic) {
+      return {
+        indicador: mindicador,
+        fuente: "mindicador.cl"
+      };
+    }
+
+    if (!mindicador && findic) {
+      return {
+        indicador: findic,
+        fuente: "findic.cl"
+      };
+    }
+
+    const fechaMindicador =
+      new Date(mindicador!.fecha).getTime();
+
+    const fechaFindic =
+      new Date(findic!.fecha).getTime();
+
+    if (fechaFindic > fechaMindicador) {
+      return {
+        indicador: findic!,
+        fuente: "findic.cl"
+      };
+    }
+
+    return {
+      indicador: mindicador!,
+      fuente: "mindicador.cl"
+    };
+  }
+
   private async cargarIndicadores() {
 
     this.cargando = true;
     this.error = undefined;
+
     this.requestUpdate();
 
-    try {
-
-      const respuesta = await fetch(
+    const resultados = await Promise.allSettled([
+      this.consultarApi(
         "https://mindicador.cl/api"
-      );
+      ),
 
-      if (!respuesta.ok) {
-        throw new Error(
-          `Error HTTP ${respuesta.status}`
-        );
-      }
+      this.consultarApi(
+        "https://findic.cl/api/"
+      )
+    ]);
 
-      this.datos =
-        await respuesta.json() as RespuestaIndicadores;
+    const respuestaMindicador =
+      resultados[0].status === "fulfilled"
+        ? resultados[0].value
+        : undefined;
 
-    } catch (error) {
+    const respuestaFindic =
+      resultados[1].status === "fulfilled"
+        ? resultados[1].value
+        : undefined;
 
-      if (error instanceof Error) {
-        this.error = error.message;
-      } else {
-        this.error =
-          "No fue posible obtener los indicadores.";
-      }
-
-    } finally {
+    if (
+      !respuestaMindicador &&
+      !respuestaFindic
+    ) {
+      this.error =
+        "No fue posible obtener datos desde ninguna fuente.";
 
       this.cargando = false;
       this.requestUpdate();
 
+      return;
     }
+
+    const codigos: CodigoIndicador[] = [
+      "uf",
+      "dolar",
+      "ipc",
+      "imacec"
+    ];
+
+    for (const codigo of codigos) {
+
+      const seleccionado =
+        this.seleccionarMasReciente(
+          respuestaMindicador?.[codigo],
+          respuestaFindic?.[codigo]
+        );
+
+      if (seleccionado) {
+        this.datos[codigo] = seleccionado;
+      }
+    }
+
+    this.cargando = false;
+
+    this.requestUpdate();
   }
 
   private formatearValor(
@@ -147,7 +250,6 @@ class IndicadoresChileCard extends LitElement {
       codigo === "ipc" ||
       codigo === "imacec"
     ) {
-
       return (
         new Intl.NumberFormat(
           "es-CL",
@@ -155,9 +257,9 @@ class IndicadoresChileCard extends LitElement {
             minimumFractionDigits: 1,
             maximumFractionDigits: 2
           }
-        ).format(indicador.valor) + " %"
+        ).format(indicador.valor)
+        + " %"
       );
-
     }
 
     return (
@@ -172,30 +274,87 @@ class IndicadoresChileCard extends LitElement {
     );
   }
 
+  private formatearFecha(
+    codigo: CodigoIndicador,
+    fechaTexto: string
+  ) {
+
+    const fecha = new Date(fechaTexto);
+
+    if (
+      codigo === "ipc" ||
+      codigo === "imacec"
+    ) {
+
+      const texto =
+        new Intl.DateTimeFormat(
+          "es-CL",
+          {
+            month: "long",
+            year: "numeric",
+            timeZone: "UTC"
+          }
+        ).format(fecha);
+
+      return (
+        texto.charAt(0).toUpperCase() +
+        texto.slice(1)
+      );
+    }
+
+    return new Intl.DateTimeFormat(
+      "es-CL",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC"
+      }
+    ).format(fecha);
+  }
+
   private mostrarIndicador(
     codigo: CodigoIndicador,
     nombre: string
   ) {
 
-    if (!this.datos) {
+    const seleccionado =
+      this.datos[codigo];
+
+    if (!seleccionado) {
       return html``;
     }
 
-    const indicador = this.datos[codigo];
+    const indicador =
+      seleccionado.indicador;
 
     return html`
-      <div class="indicador">
+      <div
+        class="indicador"
+        title="Fuente: ${seleccionado.fuente}"
+      >
 
         <span class="nombre">
           ${nombre}
         </span>
 
-        <span class="valor">
-          ${this.formatearValor(
-            codigo,
-            indicador
-          )}
-        </span>
+        <div class="datos">
+
+          <div class="valor">
+            ${this.formatearValor(
+              codigo,
+              indicador
+            )}
+          </div>
+
+          <div class="fecha">
+            ${this.formatearFecha(
+              codigo,
+              indicador.fecha
+            )}
+          </div>
+
+        </div>
 
       </div>
     `;
@@ -211,8 +370,13 @@ class IndicadoresChileCard extends LitElement {
       <ha-card>
 
         <div class="titulo">
-          <ha-icon icon="mdi:finance"></ha-icon>
+
+          <ha-icon
+            icon="mdi:finance">
+          </ha-icon>
+
           Indicadores Chile
+
         </div>
 
         ${
@@ -228,8 +392,6 @@ class IndicadoresChileCard extends LitElement {
 
               ? html`
                   <div class="error">
-                    No fue posible obtener los indicadores.
-                    <br>
                     ${this.error}
                   </div>
                 `

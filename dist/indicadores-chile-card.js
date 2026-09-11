@@ -512,7 +512,7 @@ de?.({ LitElement: $ }), (Q.litElementVersions ??= []).push("4.2.2");
 //#region src/indicadores-chile-card.ts
 var fe = class extends $ {
 	configuracion;
-	datos;
+	datos = {};
 	cargando = !1;
 	error;
 	iniciado = !1;
@@ -543,18 +543,29 @@ var fe = class extends $ {
     .indicador {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       padding: 10px 0;
       border-bottom: 1px solid var(--divider-color);
     }
 
     .nombre {
       color: var(--secondary-text-color);
+      padding-top: 2px;
+    }
+
+    .datos {
+      text-align: right;
     }
 
     .valor {
       font-size: 16px;
       font-weight: bold;
+    }
+
+    .fecha {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--secondary-text-color);
     }
 
     .mensaje {
@@ -575,17 +586,47 @@ var fe = class extends $ {
 	connectedCallback() {
 		super.connectedCallback(), this.iniciado || (this.iniciado = !0, this.cargarIndicadores());
 	}
+	async consultarApi(e) {
+		let t = await fetch(e);
+		if (!t.ok) throw Error(`Error HTTP ${t.status}`);
+		return await t.json();
+	}
+	seleccionarMasReciente(e, t) {
+		if (!e && !t) return;
+		if (e && !t) return {
+			indicador: e,
+			fuente: "mindicador.cl"
+		};
+		if (!e && t) return {
+			indicador: t,
+			fuente: "findic.cl"
+		};
+		let n = new Date(e.fecha).getTime();
+		return new Date(t.fecha).getTime() > n ? {
+			indicador: t,
+			fuente: "findic.cl"
+		} : {
+			indicador: e,
+			fuente: "mindicador.cl"
+		};
+	}
 	async cargarIndicadores() {
 		this.cargando = !0, this.error = void 0, this.requestUpdate();
-		try {
-			let e = await fetch("https://mindicador.cl/api");
-			if (!e.ok) throw Error(`Error HTTP ${e.status}`);
-			this.datos = await e.json();
-		} catch (e) {
-			this.error = e instanceof Error ? e.message : "No fue posible obtener los indicadores.";
-		} finally {
-			this.cargando = !1, this.requestUpdate();
+		let e = await Promise.allSettled([this.consultarApi("https://mindicador.cl/api"), this.consultarApi("https://findic.cl/api/")]), t = e[0].status === "fulfilled" ? e[0].value : void 0, n = e[1].status === "fulfilled" ? e[1].value : void 0;
+		if (!t && !n) {
+			this.error = "No fue posible obtener datos desde ninguna fuente.", this.cargando = !1, this.requestUpdate();
+			return;
 		}
+		for (let e of [
+			"uf",
+			"dolar",
+			"ipc",
+			"imacec"
+		]) {
+			let r = this.seleccionarMasReciente(t?.[e], n?.[e]);
+			r && (this.datos[e] = r);
+		}
+		this.cargando = !1, this.requestUpdate();
 	}
 	formatearValor(e, t) {
 		return e === "ipc" || e === "imacec" ? new Intl.NumberFormat("es-CL", {
@@ -596,19 +637,48 @@ var fe = class extends $ {
 			maximumFractionDigits: 2
 		}).format(t.valor);
 	}
+	formatearFecha(e, t) {
+		let n = new Date(t);
+		if (e === "ipc" || e === "imacec") {
+			let e = new Intl.DateTimeFormat("es-CL", {
+				month: "long",
+				year: "numeric",
+				timeZone: "UTC"
+			}).format(n);
+			return e.charAt(0).toUpperCase() + e.slice(1);
+		}
+		return new Intl.DateTimeFormat("es-CL", {
+			day: "2-digit",
+			month: "short",
+			year: "numeric",
+			timeZone: "UTC"
+		}).format(n);
+	}
 	mostrarIndicador(e, t) {
-		if (!this.datos) return H``;
 		let n = this.datos[e];
+		if (!n) return H``;
+		let r = n.indicador;
 		return H`
-      <div class="indicador">
+      <div
+        class="indicador"
+        title="Fuente: ${n.fuente}"
+      >
 
         <span class="nombre">
           ${t}
         </span>
 
-        <span class="valor">
-          ${this.formatearValor(e, n)}
-        </span>
+        <div class="datos">
+
+          <div class="valor">
+            ${this.formatearValor(e, r)}
+          </div>
+
+          <div class="fecha">
+            ${this.formatearFecha(e, r.fecha)}
+          </div>
+
+        </div>
 
       </div>
     `;
@@ -621,8 +691,13 @@ var fe = class extends $ {
       <ha-card>
 
         <div class="titulo">
-          <ha-icon icon="mdi:finance"></ha-icon>
+
+          <ha-icon
+            icon="mdi:finance">
+          </ha-icon>
+
           Indicadores Chile
+
         </div>
 
         ${this.cargando ? H`
@@ -631,8 +706,6 @@ var fe = class extends $ {
                 </div>
               ` : this.error ? H`
                   <div class="error">
-                    No fue posible obtener los indicadores.
-                    <br>
                     ${this.error}
                   </div>
                 ` : H`
