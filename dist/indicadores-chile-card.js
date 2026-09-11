@@ -584,7 +584,7 @@ var Z = [
 		tipoFecha: "fecha"
 	},
 	bitcoin: {
-		nombre: "Bitcoin",
+		nombre: "BTC",
 		formato: "usd",
 		tipoFecha: "fecha"
 	}
@@ -638,6 +638,8 @@ var Z = [
       justify-content: space-between;
       align-items: flex-start;
 
+      gap: 10px;
+
       padding: 10px 0;
 
       border-bottom:
@@ -651,12 +653,14 @@ var Z = [
       padding-top: 2px;
 
       min-width: 0;
+      flex: 1 1 auto;
+      padding-right: 8px;
     }
 
     .datos {
       text-align: right;
 
-      flex-shrink: 0;
+      flex: 0 0 auto;
     }
 
     .linea-valor {
