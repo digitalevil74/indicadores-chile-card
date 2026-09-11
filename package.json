@@ -1,0 +1,30 @@
+{
+  "name": "indicadores-chile-card",
+  "version": "1.0.0",
+  "description": "Tarjeta personalizada para Home Assistant que muestra indicadores económicos de Chile directamente en el dashboard, utilizando datos obtenidos desde **[mindicador.cl](https://mindicador.cl/)** mediante su API pública.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "vite build",
+    "comprobar": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/digitalevil74/indicadores-chile-card.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/digitalevil74/indicadores-chile-card/issues"
+  },
+  "homepage": "https://github.com/digitalevil74/indicadores-chile-card#readme",
+  "dependencies": {
+    "lit": "^3.3.3"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
+  }
+}
