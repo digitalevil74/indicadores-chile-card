@@ -23,6 +23,11 @@ type TipoFecha =
   | "fecha"
   | "mes";
 
+type DireccionTendencia =
+  | "sube"
+  | "baja"
+  | "igual";
+
 interface ConfiguracionTarjeta {
   type?: string;
   indicadores?: CodigoIndicador[];
@@ -34,6 +39,15 @@ interface Indicador {
   unidad_medida: string;
   fecha: string;
   valor: number;
+}
+
+interface RegistroSerie {
+  fecha: string;
+  valor: number;
+}
+
+interface RespuestaSerie {
+  serie?: RegistroSerie[];
 }
 
 interface RespuestaIndicadores {
@@ -80,6 +94,13 @@ const INDICADORES_PREDETERMINADOS: CodigoIndicador[] = [
   "dolar",
   "ipc",
   "imacec"
+];
+
+const INDICADORES_CON_TENDENCIA: CodigoIndicador[] = [
+  "dolar",
+  "euro",
+  "libra_cobre",
+  "bitcoin"
 ];
 
 const DEFINICIONES: Record<
@@ -166,6 +187,11 @@ class IndicadoresChileCard extends LitElement {
       Record<CodigoIndicador, IndicadorSeleccionado>
     > = {};
 
+  private tendencias:
+    Partial<
+      Record<CodigoIndicador, DireccionTendencia>
+    > = {};
+
   private cargando = false;
 
   private error?: string;
@@ -230,36 +256,58 @@ class IndicadoresChileCard extends LitElement {
       text-align: right;
     }
 
+    .linea-valor {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
     .valor {
       font-size: 16px;
       font-weight: bold;
     }
 
+    .valor.positivo {
+      color: var(--success-color, #4caf50);
+    }
+
+    .valor.negativo {
+      color: var(--error-color, #f44336);
+    }
+
+    .tendencia {
+      --mdc-icon-size: 17px;
+    }
+
+    .tendencia.sube {
+      color: var(--success-color, #4caf50);
+    }
+
+    .tendencia.baja {
+      color: var(--error-color, #f44336);
+    }
+
+    .tendencia.igual {
+      color: var(--secondary-text-color);
+    }
+
     .fecha {
       margin-top: 4px;
-
       font-size: 12px;
-
-      color:
-        var(--secondary-text-color);
+      color: var(--secondary-text-color);
     }
 
     .mensaje {
       padding: 20px;
-
       text-align: center;
-
-      color:
-        var(--secondary-text-color);
+      color: var(--secondary-text-color);
     }
 
     .error {
       padding: 20px;
-
       text-align: center;
-
-      color:
-        var(--error-color);
+      color: var(--error-color);
     }
 
   `;
@@ -354,6 +402,37 @@ class IndicadoresChileCard extends LitElement {
     return (
       await respuesta.json()
     ) as RespuestaIndicadores;
+
+  }
+
+
+  private async consultarSerie(
+    codigo: CodigoIndicador,
+    fuente: "mindicador.cl" | "findic.cl"
+  ): Promise<RespuestaSerie> {
+
+    const url =
+      fuente === "mindicador.cl"
+        ? `https://mindicador.cl/api/${codigo}`
+        : `https://findic.cl/api/${codigo}`;
+
+
+    const respuesta =
+      await fetch(url);
+
+
+    if (!respuesta.ok) {
+
+      throw new Error(
+        `Error HTTP ${respuesta.status}`
+      );
+
+    }
+
+
+    return (
+      await respuesta.json()
+    ) as RespuestaSerie;
 
   }
 
@@ -502,6 +581,151 @@ class IndicadoresChileCard extends LitElement {
 
     this.requestUpdate();
 
+
+    void this.cargarTendencias();
+
+  }
+
+
+  private async cargarTendencias() {
+
+    const indicadoresConfigurados =
+      this.configuracion.indicadores ??
+      INDICADORES_PREDETERMINADOS;
+
+
+    const indicadoresParaConsultar =
+      indicadoresConfigurados.filter(
+        codigo =>
+          INDICADORES_CON_TENDENCIA.includes(
+            codigo
+          ) &&
+          this.datos[codigo] !== undefined
+      );
+
+
+    await Promise.all(
+
+      indicadoresParaConsultar.map(
+        async codigo => {
+
+          const seleccionado =
+            this.datos[codigo];
+
+
+          if (!seleccionado) {
+            return;
+          }
+
+
+          try {
+
+            const respuesta =
+              await this.consultarSerie(
+                codigo,
+                seleccionado.fuente
+              );
+
+
+            if (
+              !respuesta.serie ||
+              respuesta.serie.length === 0
+            ) {
+              return;
+            }
+
+
+            const fechaActual =
+              new Date(
+                seleccionado.indicador.fecha
+              ).getTime();
+
+
+            const registrosAnteriores =
+              respuesta.serie
+
+                .filter(registro => {
+
+                  const fechaRegistro =
+                    new Date(
+                      registro.fecha
+                    ).getTime();
+
+                  return (
+                    fechaRegistro <
+                    fechaActual
+                  );
+
+                })
+
+                .sort(
+                  (a, b) =>
+                    new Date(
+                      b.fecha
+                    ).getTime()
+                    -
+                    new Date(
+                      a.fecha
+                    ).getTime()
+                );
+
+
+            if (
+              registrosAnteriores.length === 0
+            ) {
+              return;
+            }
+
+
+            const valorActual =
+              seleccionado.indicador.valor;
+
+
+            const valorAnterior =
+              registrosAnteriores[0].valor;
+
+
+            if (
+              valorActual >
+              valorAnterior
+            ) {
+
+              this.tendencias[codigo] =
+                "sube";
+
+            } else if (
+              valorActual <
+              valorAnterior
+            ) {
+
+              this.tendencias[codigo] =
+                "baja";
+
+            } else {
+
+              this.tendencias[codigo] =
+                "igual";
+
+            }
+
+
+            this.requestUpdate();
+
+          } catch {
+
+            /*
+             * Si falla la consulta histórica,
+             * simplemente no mostramos flecha.
+             * El valor actual continúa funcionando.
+             */
+
+          }
+
+        }
+      )
+
+    );
+
   }
 
 
@@ -642,6 +866,81 @@ class IndicadoresChileCard extends LitElement {
   }
 
 
+  private claseValor(
+    codigo: CodigoIndicador,
+    valor: number
+  ) {
+
+    if (codigo !== "imacec") {
+      return "valor";
+    }
+
+
+    if (valor > 0) {
+      return "valor positivo";
+    }
+
+
+    if (valor < 0) {
+      return "valor negativo";
+    }
+
+
+    return "valor";
+
+  }
+
+
+  private mostrarTendencia(
+    codigo: CodigoIndicador
+  ) {
+
+    const tendencia =
+      this.tendencias[codigo];
+
+
+    if (!tendencia) {
+      return html``;
+    }
+
+
+    if (tendencia === "sube") {
+
+      return html`
+        <ha-icon
+          class="tendencia sube"
+          icon="mdi:arrow-up-bold"
+          title="Subió respecto al valor anterior"
+        ></ha-icon>
+      `;
+
+    }
+
+
+    if (tendencia === "baja") {
+
+      return html`
+        <ha-icon
+          class="tendencia baja"
+          icon="mdi:arrow-down-bold"
+          title="Bajó respecto al valor anterior"
+        ></ha-icon>
+      `;
+
+    }
+
+
+    return html`
+      <ha-icon
+        class="tendencia igual"
+        icon="mdi:minus"
+        title="Sin variación respecto al valor anterior"
+      ></ha-icon>
+    `;
+
+  }
+
+
   private mostrarIndicador(
     codigo: CodigoIndicador
   ) {
@@ -681,11 +980,25 @@ class IndicadoresChileCard extends LitElement {
 
         <div class="datos">
 
-          <div class="valor">
+          <div class="linea-valor">
 
-            ${this.formatearValor(
-              codigo,
-              indicador
+            <div
+              class="${this.claseValor(
+                codigo,
+                indicador.valor
+              )}"
+            >
+
+              ${this.formatearValor(
+                codigo,
+                indicador
+              )}
+
+            </div>
+
+
+            ${this.mostrarTendencia(
+              codigo
             )}
 
           </div>

@@ -29,11 +29,11 @@ var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nat
 	let t = "";
 	for (let n of e.cssRules) t += n.cssText;
 	return a(t);
-})(e) : e, { is: l, defineProperty: u, getOwnPropertyDescriptor: d, getOwnPropertyNames: ee, getOwnPropertySymbols: te, getPrototypeOf: ne } = Object, f = globalThis, p = f.trustedTypes, m = p ? p.emptyScript : "", re = f.reactiveElementPolyfillSupport, h = (e, t) => e, g = {
+})(e) : e, { is: l, defineProperty: u, getOwnPropertyDescriptor: d, getOwnPropertyNames: ee, getOwnPropertySymbols: te, getPrototypeOf: ne } = Object, f = globalThis, p = f.trustedTypes, re = p ? p.emptyScript : "", ie = f.reactiveElementPolyfillSupport, m = (e, t) => e, h = {
 	toAttribute(e, t) {
 		switch (t) {
 			case Boolean:
-				e = e ? m : null;
+				e = e ? re : null;
 				break;
 			case Object:
 			case Array: e = e == null ? e : JSON.stringify(e);
@@ -58,23 +58,23 @@ var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nat
 		}
 		return n;
 	}
-}, _ = (e, t) => !l(e, t), v = {
+}, g = (e, t) => !l(e, t), _ = {
 	attribute: !0,
 	type: String,
-	converter: g,
+	converter: h,
 	reflect: !1,
 	useDefault: !1,
-	hasChanged: _
+	hasChanged: g
 };
 Symbol.metadata ??= Symbol("metadata"), f.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-var y = class extends HTMLElement {
+var v = class extends HTMLElement {
 	static addInitializer(e) {
 		this._$Ei(), (this.l ??= []).push(e);
 	}
 	static get observedAttributes() {
 		return this.finalize(), this._$Eh && [...this._$Eh.keys()];
 	}
-	static createProperty(e, t = v) {
+	static createProperty(e, t = _) {
 		if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
 			let n = Symbol(), r = this.getPropertyDescriptor(e, n, t);
 			r !== void 0 && u(this.prototype, e, r);
@@ -100,16 +100,16 @@ var y = class extends HTMLElement {
 		};
 	}
 	static getPropertyOptions(e) {
-		return this.elementProperties.get(e) ?? v;
+		return this.elementProperties.get(e) ?? _;
 	}
 	static _$Ei() {
-		if (this.hasOwnProperty(h("elementProperties"))) return;
+		if (this.hasOwnProperty(m("elementProperties"))) return;
 		let e = ne(this);
 		e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
 	}
 	static finalize() {
-		if (this.hasOwnProperty(h("finalized"))) return;
-		if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(h("properties"))) {
+		if (this.hasOwnProperty(m("finalized"))) return;
+		if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(m("properties"))) {
 			let e = this.properties, t = [...ee(e), ...te(e)];
 			for (let n of t) this.createProperty(n, e[n]);
 		}
@@ -171,14 +171,14 @@ var y = class extends HTMLElement {
 	_$ET(e, t) {
 		let n = this.constructor.elementProperties.get(e), r = this.constructor._$Eu(e, n);
 		if (r !== void 0 && !0 === n.reflect) {
-			let i = (n.converter?.toAttribute === void 0 ? g : n.converter).toAttribute(t, n.type);
+			let i = (n.converter?.toAttribute === void 0 ? h : n.converter).toAttribute(t, n.type);
 			this._$Em = e, i == null ? this.removeAttribute(r) : this.setAttribute(r, i), this._$Em = null;
 		}
 	}
 	_$AK(e, t) {
 		let n = this.constructor, r = n._$Eh.get(e);
 		if (r !== void 0 && this._$Em !== r) {
-			let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? g : e.converter;
+			let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? h : e.converter;
 			this._$Em = r;
 			let a = i.fromAttribute(t, e.type);
 			this[r] = a ?? this._$Ej?.get(r) ?? a, this._$Em = null;
@@ -187,7 +187,7 @@ var y = class extends HTMLElement {
 	requestUpdate(e, t, n, r = !1, i) {
 		if (e !== void 0) {
 			let a = this.constructor;
-			if (!1 === r && (i = this[e]), n ??= a.getPropertyOptions(e), !((n.hasChanged ?? _)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, n)))) return;
+			if (!1 === r && (i = this[e]), n ??= a.getPropertyOptions(e), !((n.hasChanged ?? g)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, n)))) return;
 			this.C(e, t, n);
 		}
 		!1 === this.isUpdatePending && (this._$ES = this._$EP());
@@ -251,17 +251,17 @@ var y = class extends HTMLElement {
 	updated(e) {}
 	firstUpdated(e) {}
 };
-y.elementStyles = [], y.shadowRootOptions = { mode: "open" }, y[h("elementProperties")] = /* @__PURE__ */ new Map(), y[h("finalized")] = /* @__PURE__ */ new Map(), re?.({ ReactiveElement: y }), (f.reactiveElementVersions ??= []).push("2.1.2");
+v.elementStyles = [], v.shadowRootOptions = { mode: "open" }, v[m("elementProperties")] = /* @__PURE__ */ new Map(), v[m("finalized")] = /* @__PURE__ */ new Map(), ie?.({ ReactiveElement: v }), (f.reactiveElementVersions ??= []).push("2.1.2");
 //#endregion
 //#region node_modules/lit-html/lit-html.js
-var b = globalThis, x = (e) => e, S = b.trustedTypes, C = S ? S.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, w = "$lit$", T = `lit$${Math.random().toFixed(9).slice(2)}$`, E = "?" + T, ie = `<${E}>`, D = document, O = () => D.createComment(""), k = (e) => e === null || typeof e != "object" && typeof e != "function", A = Array.isArray, ae = (e) => A(e) || typeof e?.[Symbol.iterator] == "function", j = "[ 	\n\f\r]", M = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, N = /-->/g, P = />/g, F = RegExp(`>|${j}(?:([^\\s"'>=/]+)(${j}*=${j}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), I = /'/g, L = /"/g, R = /^(?:script|style|textarea|title)$/i, z = ((e) => (t, ...n) => ({
+var y = globalThis, b = (e) => e, x = y.trustedTypes, S = x ? x.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, C = "$lit$", w = `lit$${Math.random().toFixed(9).slice(2)}$`, T = "?" + w, E = `<${T}>`, D = document, O = () => D.createComment(""), k = (e) => e === null || typeof e != "object" && typeof e != "function", A = Array.isArray, ae = (e) => A(e) || typeof e?.[Symbol.iterator] == "function", j = "[ 	\n\f\r]", M = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, N = /-->/g, P = />/g, F = RegExp(`>|${j}(?:([^\\s"'>=/]+)(${j}*=${j}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), I = /'/g, L = /"/g, R = /^(?:script|style|textarea|title)$/i, z = ((e) => (t, ...n) => ({
 	_$litType$: e,
 	strings: t,
 	values: n
 }))(1), B = Symbol.for("lit-noChange"), V = Symbol.for("lit-nothing"), H = /* @__PURE__ */ new WeakMap(), U = D.createTreeWalker(D, 129);
 function W(e, t) {
 	if (!A(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
-	return C === void 0 ? t : C.createHTML(t);
+	return S === void 0 ? t : S.createHTML(t);
 }
 var oe = (e, t) => {
 	let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = M;
@@ -269,7 +269,7 @@ var oe = (e, t) => {
 		let n = e[t], s, c, l = -1, u = 0;
 		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === M ? c[1] === "!--" ? o = N : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = F) : (R.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = F) : o = P : o === F ? c[0] === ">" ? (o = i ?? M, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? F : c[3] === "\"" ? L : I) : o === L || o === I ? o = F : o === N || o === P ? o = M : (o = F, i = void 0);
 		let d = o === F && e[t + 1].startsWith("/>") ? " " : "";
-		a += o === M ? n + ie : l >= 0 ? (r.push(s), n.slice(0, l) + w + n.slice(l) + T + d) : n + T + (l === -2 ? t : d);
+		a += o === M ? n + E : l >= 0 ? (r.push(s), n.slice(0, l) + C + n.slice(l) + w + d) : n + w + (l === -2 ? t : d);
 	}
 	return [W(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
 }, G = class e {
@@ -283,8 +283,8 @@ var oe = (e, t) => {
 		}
 		for (; (i = U.nextNode()) !== null && c.length < s;) {
 			if (i.nodeType === 1) {
-				if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(w)) {
-					let t = u[o++], n = i.getAttribute(e).split(T), r = /([.?@])?(.*)/.exec(t);
+				if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(C)) {
+					let t = u[o++], n = i.getAttribute(e).split(w), r = /([.?@])?(.*)/.exec(t);
 					c.push({
 						type: 1,
 						index: a,
@@ -292,14 +292,14 @@ var oe = (e, t) => {
 						strings: n,
 						ctor: r[1] === "." ? ce : r[1] === "?" ? le : r[1] === "@" ? ue : J
 					}), i.removeAttribute(e);
-				} else e.startsWith(T) && (c.push({
+				} else e.startsWith(w) && (c.push({
 					type: 6,
 					index: a
 				}), i.removeAttribute(e));
 				if (R.test(i.tagName)) {
-					let e = i.textContent.split(T), t = e.length - 1;
+					let e = i.textContent.split(w), t = e.length - 1;
 					if (t > 0) {
-						i.textContent = S ? S.emptyScript : "";
+						i.textContent = x ? x.emptyScript : "";
 						for (let n = 0; n < t; n++) i.append(e[n], O()), U.nextNode(), c.push({
 							type: 2,
 							index: ++a
@@ -308,16 +308,16 @@ var oe = (e, t) => {
 					}
 				}
 			} else if (i.nodeType === 8) {
-				if (i.data === E) c.push({
+				if (i.data === T) c.push({
 					type: 2,
 					index: a
 				});
 				else {
 					let e = -1;
-					for (; (e = i.data.indexOf(T, e + 1)) !== -1;) c.push({
+					for (; (e = i.data.indexOf(w, e + 1)) !== -1;) c.push({
 						type: 7,
 						index: a
-					}), e += T.length - 1;
+					}), e += w.length - 1;
 				}
 			}
 			a++;
@@ -409,8 +409,8 @@ var se = class {
 	}
 	_$AR(e = this._$AA.nextSibling, t) {
 		for (this._$AP?.(!1, !0, t); e !== this._$AB;) {
-			let t = x(e).nextSibling;
-			x(e).remove(), e = t;
+			let t = b(e).nextSibling;
+			b(e).remove(), e = t;
 		}
 	}
 	setConnected(e) {
@@ -474,8 +474,8 @@ var se = class {
 	_$AI(e) {
 		K(this, e);
 	}
-}, fe = b.litHtmlPolyfillSupport;
-fe?.(G, q), (b.litHtmlVersions ??= []).push("3.3.3");
+}, fe = y.litHtmlPolyfillSupport;
+fe?.(G, q), (y.litHtmlVersions ??= []).push("3.3.3");
 var pe = (e, t, n) => {
 	let r = n?.renderBefore ?? t, i = r._$litPart$;
 	if (i === void 0) {
@@ -483,7 +483,7 @@ var pe = (e, t, n) => {
 		r._$litPart$ = i = new q(t.insertBefore(O(), e), e, void 0, n ?? {});
 	}
 	return i._$AI(e), i;
-}, Y = globalThis, X = class extends y {
+}, Y = globalThis, X = class extends v {
 	constructor() {
 		super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
 	}
@@ -527,6 +527,11 @@ var Z = [
 	"dolar",
 	"ipc",
 	"imacec"
+], he = [
+	"dolar",
+	"euro",
+	"libra_cobre",
+	"bitcoin"
 ], $ = {
 	uf: {
 		nombre: "UF",
@@ -583,9 +588,10 @@ var Z = [
 		formato: "usd",
 		tipoFecha: "fecha"
 	}
-}, he = class extends X {
+}, ge = class extends X {
 	configuracion = { indicadores: Q };
 	datos = {};
+	tendencias = {};
 	cargando = !1;
 	error;
 	iniciado = !1;
@@ -646,36 +652,58 @@ var Z = [
       text-align: right;
     }
 
+    .linea-valor {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
     .valor {
       font-size: 16px;
       font-weight: bold;
     }
 
+    .valor.positivo {
+      color: var(--success-color, #4caf50);
+    }
+
+    .valor.negativo {
+      color: var(--error-color, #f44336);
+    }
+
+    .tendencia {
+      --mdc-icon-size: 17px;
+    }
+
+    .tendencia.sube {
+      color: var(--success-color, #4caf50);
+    }
+
+    .tendencia.baja {
+      color: var(--error-color, #f44336);
+    }
+
+    .tendencia.igual {
+      color: var(--secondary-text-color);
+    }
+
     .fecha {
       margin-top: 4px;
-
       font-size: 12px;
-
-      color:
-        var(--secondary-text-color);
+      color: var(--secondary-text-color);
     }
 
     .mensaje {
       padding: 20px;
-
       text-align: center;
-
-      color:
-        var(--secondary-text-color);
+      color: var(--secondary-text-color);
     }
 
     .error {
       padding: 20px;
-
       text-align: center;
-
-      color:
-        var(--error-color);
+      color: var(--error-color);
     }
 
   `;
@@ -696,6 +724,11 @@ var Z = [
 		let t = await fetch(e);
 		if (!t.ok) throw Error(`Error HTTP ${t.status}`);
 		return await t.json();
+	}
+	async consultarSerie(e, t) {
+		let n = t === "mindicador.cl" ? `https://mindicador.cl/api/${e}` : `https://findic.cl/api/${e}`, r = await fetch(n);
+		if (!r.ok) throw Error(`Error HTTP ${r.status}`);
+		return await r.json();
 	}
 	seleccionarMasReciente(e, t) {
 		if (!e && !t) return;
@@ -727,7 +760,21 @@ var Z = [
 			let r = this.seleccionarMasReciente(t?.[e], n?.[e]);
 			r && (this.datos[e] = r);
 		}
-		this.cargando = !1, this.requestUpdate();
+		this.cargando = !1, this.requestUpdate(), this.cargarTendencias();
+	}
+	async cargarTendencias() {
+		let e = (this.configuracion.indicadores ?? Q).filter((e) => he.includes(e) && this.datos[e] !== void 0);
+		await Promise.all(e.map(async (e) => {
+			let t = this.datos[e];
+			if (t) try {
+				let n = await this.consultarSerie(e, t.fuente);
+				if (!n.serie || n.serie.length === 0) return;
+				let r = new Date(t.indicador.fecha).getTime(), i = n.serie.filter((e) => new Date(e.fecha).getTime() < r).sort((e, t) => new Date(t.fecha).getTime() - new Date(e.fecha).getTime());
+				if (i.length === 0) return;
+				let a = t.indicador.valor, o = i[0].valor;
+				a > o ? this.tendencias[e] = "sube" : a < o ? this.tendencias[e] = "baja" : this.tendencias[e] = "igual", this.requestUpdate();
+			} catch {}
+		}));
 	}
 	formatearValor(e, t) {
 		let n = $[e];
@@ -762,6 +809,31 @@ var Z = [
 			timeZone: "UTC"
 		}).format(n);
 	}
+	claseValor(e, t) {
+		return e === "imacec" ? t > 0 ? "valor positivo" : t < 0 ? "valor negativo" : "valor" : "valor";
+	}
+	mostrarTendencia(e) {
+		let t = this.tendencias[e];
+		return t ? t === "sube" ? z`
+        <ha-icon
+          class="tendencia sube"
+          icon="mdi:arrow-up-bold"
+          title="Subió respecto al valor anterior"
+        ></ha-icon>
+      ` : t === "baja" ? z`
+        <ha-icon
+          class="tendencia baja"
+          icon="mdi:arrow-down-bold"
+          title="Bajó respecto al valor anterior"
+        ></ha-icon>
+      ` : z`
+      <ha-icon
+        class="tendencia igual"
+        icon="mdi:minus"
+        title="Sin variación respecto al valor anterior"
+      ></ha-icon>
+    ` : z``;
+	}
 	mostrarIndicador(e) {
 		let t = this.datos[e];
 		if (!t) return z``;
@@ -782,9 +854,18 @@ var Z = [
 
         <div class="datos">
 
-          <div class="valor">
+          <div class="linea-valor">
 
-            ${this.formatearValor(e, n)}
+            <div
+              class="${this.claseValor(e, n.valor)}"
+            >
+
+              ${this.formatearValor(e, n)}
+
+            </div>
+
+
+            ${this.mostrarTendencia(e)}
 
           </div>
 
@@ -900,5 +981,5 @@ var Z = [
     `;
 	}
 };
-customElements.define("indicadores-chile-card", he);
+customElements.define("indicadores-chile-card", ge);
 //#endregion
