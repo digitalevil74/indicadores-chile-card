@@ -2,6 +2,7 @@ import { LitElement, html, css } from "lit";
 
 interface ConfiguracionTarjeta {
   type?: string;
+  indicadores?: CodigoIndicador[];
 }
 
 interface Indicador {
@@ -30,9 +31,25 @@ interface IndicadorSeleccionado {
   fuente: "mindicador.cl" | "findic.cl";
 }
 
+const INDICADORES_PREDETERMINADOS: CodigoIndicador[] = [
+  "uf",
+  "dolar",
+  "ipc",
+  "imacec"
+];
+
+const NOMBRES_INDICADORES: Record<CodigoIndicador, string> = {
+  uf: "UF",
+  dolar: "Dólar Obs.",
+  ipc: "IPC",
+  imacec: "IMACEC"
+};
+
 class IndicadoresChileCard extends LitElement {
 
-  private configuracion?: ConfiguracionTarjeta;
+  private configuracion: ConfiguracionTarjeta = {
+    indicadores: INDICADORES_PREDETERMINADOS
+  };
 
   private datos:
     Partial<Record<CodigoIndicador, IndicadorSeleccionado>> = {};
@@ -71,7 +88,7 @@ class IndicadoresChileCard extends LitElement {
 
     .indicadores {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px 24px;
     }
 
@@ -117,7 +134,45 @@ class IndicadoresChileCard extends LitElement {
   `;
 
   setConfig(configuracion: ConfiguracionTarjeta) {
-    this.configuracion = configuracion;
+
+    const indicadores =
+      configuracion.indicadores ??
+      INDICADORES_PREDETERMINADOS;
+
+    if (!Array.isArray(indicadores)) {
+      throw new Error(
+        "La opción 'indicadores' debe ser una lista."
+      );
+    }
+
+    if (indicadores.length === 0) {
+      throw new Error(
+        "Debes seleccionar al menos un indicador."
+      );
+    }
+
+    const permitidos: CodigoIndicador[] = [
+      "uf",
+      "dolar",
+      "ipc",
+      "imacec"
+    ];
+
+    for (const indicador of indicadores) {
+
+      if (!permitidos.includes(indicador)) {
+        throw new Error(
+          `Indicador no válido: ${indicador}. ` +
+          `Usa: uf, dolar, ipc o imacec.`
+        );
+      }
+
+    }
+
+    this.configuracion = {
+      ...configuracion,
+      indicadores
+    };
   }
 
   connectedCallback() {
@@ -217,6 +272,7 @@ class IndicadoresChileCard extends LitElement {
       !respuestaMindicador &&
       !respuestaFindic
     ) {
+
       this.error =
         "No fue posible obtener datos desde ninguna fuente.";
 
@@ -260,6 +316,7 @@ class IndicadoresChileCard extends LitElement {
       codigo === "ipc" ||
       codigo === "imacec"
     ) {
+
       return (
         new Intl.NumberFormat(
           "es-CL",
@@ -324,8 +381,7 @@ class IndicadoresChileCard extends LitElement {
   }
 
   private mostrarIndicador(
-    codigo: CodigoIndicador,
-    nombre: string
+    codigo: CodigoIndicador
   ) {
 
     const seleccionado =
@@ -345,7 +401,7 @@ class IndicadoresChileCard extends LitElement {
       >
 
         <span class="nombre">
-          ${nombre}
+          ${NOMBRES_INDICADORES[codigo]}
         </span>
 
         <div class="datos">
@@ -375,6 +431,10 @@ class IndicadoresChileCard extends LitElement {
   }
 
   render() {
+
+    const indicadores =
+      this.configuracion.indicadores ??
+      INDICADORES_PREDETERMINADOS;
 
     return html`
       <ha-card>
@@ -455,24 +515,11 @@ class IndicadoresChileCard extends LitElement {
               : html`
                   <div class="indicadores">
 
-                    ${this.mostrarIndicador(
-                      "uf",
-                      "UF"
-                    )}
-
-                    ${this.mostrarIndicador(
-                      "dolar",
-                      "Dólar Obs."
-                    )}
-
-                    ${this.mostrarIndicador(
-                      "ipc",
-                      "IPC"
-                    )}
-
-                    ${this.mostrarIndicador(
-                      "imacec",
-                      "IMACEC"
+                    ${indicadores.map(
+                      codigo =>
+                        this.mostrarIndicador(
+                          codigo
+                        )
                     )}
 
                   </div>
