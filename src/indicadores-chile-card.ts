@@ -49,14 +49,24 @@ class IndicadoresChileCard extends LitElement {
     .titulo {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 9px;
       font-size: 20px;
       font-weight: bold;
       margin-bottom: 18px;
     }
 
-    .titulo ha-icon {
-      color: var(--primary-color);
+    .bandera {
+      width: 25px;
+      height: 17px;
+      border-radius: 2px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .bandera svg {
+      display: block;
+      width: 100%;
+      height: 100%;
     }
 
     .indicadores {
@@ -371,9 +381,55 @@ class IndicadoresChileCard extends LitElement {
 
         <div class="titulo">
 
-          <ha-icon
-            icon="mdi:finance">
-          </ha-icon>
+          <div class="bandera">
+            <svg
+              viewBox="0 0 30 20"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-label="Bandera de Chile"
+            >
+
+              <rect
+                x="0"
+                y="0"
+                width="30"
+                height="10"
+                fill="#ffffff"
+              />
+
+              <rect
+                x="0"
+                y="10"
+                width="30"
+                height="10"
+                fill="#d52b1e"
+              />
+
+              <rect
+                x="0"
+                y="0"
+                width="10"
+                height="10"
+                fill="#0039a6"
+              />
+
+              <polygon
+                points="
+                  5,2
+                  5.7,4.1
+                  7.9,4.1
+                  6.1,5.4
+                  6.8,7.5
+                  5,6.2
+                  3.2,7.5
+                  3.9,5.4
+                  2.1,4.1
+                  4.3,4.1
+                "
+                fill="#ffffff"
+              />
+
+            </svg>
+          </div>
 
           Indicadores Chile
 
@@ -406,7 +462,7 @@ class IndicadoresChileCard extends LitElement {
 
                     ${this.mostrarIndicador(
                       "dolar",
-                      "Dólar observado"
+                      "Dólar Obs."
                     )}
 
                     ${this.mostrarIndicador(
