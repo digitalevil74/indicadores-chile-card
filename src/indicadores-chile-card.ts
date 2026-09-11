@@ -795,7 +795,7 @@ class IndicadoresChileCard extends LitElement {
     ) {
 
       return (
-        "US$ " +
+        "US$\u00A0" +
         new Intl.NumberFormat(
           "es-CL",
           {

@@ -811,7 +811,7 @@ var Z = [
 		return n.formato === "porcentaje" ? new Intl.NumberFormat("es-CL", {
 			minimumFractionDigits: 1,
 			maximumFractionDigits: 2
-		}).format(t.valor) + " %" : n.formato === "usd" ? "US$ " + new Intl.NumberFormat("es-CL", {
+		}).format(t.valor) + " %" : n.formato === "usd" ? "US$\xA0" + new Intl.NumberFormat("es-CL", {
 			minimumFractionDigits: 2,
 			maximumFractionDigits: 2
 		}).format(t.valor) : n.formato === "clp_entero" ? "$ " + new Intl.NumberFormat("es-CL", {
